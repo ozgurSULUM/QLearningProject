@@ -5,6 +5,12 @@
  */
 package qlearningproject;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+
 /**
  *
  * @author ozgur
@@ -70,11 +76,11 @@ public class Window extends javax.swing.JFrame {
 
         jLabel2.setText("row:");
 
-        jTextField1.setText("  ");
+        jTextField1.setText("1");
 
         jLabel3.setText("column:");
 
-        jTextField2.setText("  ");
+        jTextField2.setText("1");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -89,7 +95,7 @@ public class Window extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jTextField1)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE))
+                    .addComponent(jTextField2, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -111,11 +117,11 @@ public class Window extends javax.swing.JFrame {
 
         jLabel5.setText("row:");
 
-        jTextField3.setText("  ");
+        jTextField3.setText("50");
 
         jLabel6.setText("column:");
 
-        jTextField4.setText("  ");
+        jTextField4.setText("50");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -130,7 +136,7 @@ public class Window extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jTextField3)
-                    .addComponent(jTextField4, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE))
+                    .addComponent(jTextField4, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -161,7 +167,7 @@ public class Window extends javax.swing.JFrame {
                             .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(67, 67, 67)
+                        .addGap(130, 130, 130)
                         .addComponent(jButton1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -186,12 +192,20 @@ public class Window extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
-        int start_row = Integer.parseInt(jTextField1.getText());
-        int start_column = Integer.parseInt(jTextField1.getText());
         
-        int target_row = Integer.parseInt(jTextField1.getText());
-        int target_column = Integer.parseInt(jTextField1.getText());
-        Board board = new Board(jPanel1,50,50,25,new Koordinat(start_column,start_row), new Koordinat(target_column,target_row));
+        int start_row = Integer.parseInt(jTextField1.getText());
+        int start_column = Integer.parseInt(jTextField2.getText());
+        
+        int target_row = Integer.parseInt(jTextField3.getText());
+        int target_column = Integer.parseInt(jTextField4.getText());
+        
+        if((start_row >= 1)&&(start_row <= 50)&&(target_row >= 1)&&(target_column <= 50)){
+            Board board = new Board(jPanel1,50,50,10,new Koordinat(start_column-1,start_row-1), new Koordinat(target_column-1,target_row-1));
+        }
+        
+        
+        
+        
         
         
     }//GEN-LAST:event_jButton1MouseClicked

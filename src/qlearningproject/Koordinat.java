@@ -12,14 +12,17 @@ package qlearningproject;
 public class Koordinat {
     private int x;
     private int y;
+    private int state;
+    public static int MATRIX_LENGTH;
 
     public Koordinat(int x, int y) {
         this.x = x;
         this.y = y;
+        this.state = MATRIX_LENGTH*y+x;
     }
     
     public boolean isEqual(Koordinat koordinat){
-        if(this.x == koordinat.getX()||(this.y == koordinat.getY())){
+        if((this.x == koordinat.getX())&&(this.y == koordinat.getY())){
             return true;
         }
         return false;
@@ -33,9 +36,18 @@ public class Koordinat {
         return y;
     }
 
+
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
+    }
+    
     @Override
     public String toString() {
-        return "("+x+","+y+","+((y*50)+x)+")\n";
+        return "("+x+","+y+","+((y*MATRIX_LENGTH)+x)+")\n";
     }
     
     
