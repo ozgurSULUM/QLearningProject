@@ -47,7 +47,7 @@ public class Koordinat {
     
     @Override
     public String toString() {
-        return "("+x+","+y+","+((y*MATRIX_LENGTH)+x)+")\n";
+        return "("+x+","+y+","+"K"+")\n";
     }
     
     

@@ -39,7 +39,7 @@ public class Board {
     private Color targetColor;
     private Color playerColor;
     private Color obstacleColor;
-    
+    private boolean leaveTrace;
     
     
     private FileWriter filewriter;
@@ -48,7 +48,7 @@ public class Board {
     
     public Board(JPanel panel, int column_row_number, int obstacle_rate,Koordinat start,Koordinat target) {
        
-        this.normal_reward = 0;
+        this.normal_reward = 2;
         this.hole_reward = -25;
         this.target_reward = 100;
         this.y =  0.9;
@@ -64,10 +64,6 @@ public class Board {
         this.state_number = column_row_number * column_row_number;
         this.start = start;
         this.target = target;
-        System.out.println("üçlü değer");
-        System.out.println(target.getState());
-        System.out.println(target.getX());
-        System.out.println(target.getY());
         this.playerPosition = start;
         this.randomGenerator = new Random();
         try {
@@ -79,7 +75,7 @@ public class Board {
         createBoard();
         createR();
         createObstacles();
-        startQLearning();
+        startQLearning(500);
         //print2D(R_matrisi);
     }
     
@@ -224,139 +220,69 @@ public class Board {
         
     }
     
-    private void startQLearning(){
+    private void startQLearning(int episode_length){
         //Q matrisi oluşturulur.
         this.Q_matrisi = new double[state_number][state_number];
         for(int i = 0; i<state_number;i++){
             for(int j = 0; j<state_number; j++){
-                Q_matrisi[i][j] = normal_reward;
+                Q_matrisi[i][j] = 0;
             }
         }
         
         
-        int episode = 0;
-        int episode_length = 1000;
-        for(;episode <episode_length;episode++){
-            System.out.println(episode);
-            //her iterasyonda border olmayan rastgele bir state üzerinden iterasyona başlanır.
-            int randomPosition = randomGenerator.nextInt(state_number);
-            boolean isObstacle0 = false;
-            for(int obstacle: obstacleStates){
-                if(obstacle == randomPosition){
-                    isObstacle0 = true;
-                }
-            }
-            if(isObstacle0){
+        leaveTrace = false;
+        for(int episode = 0;episode <episode_length;){
+            
+            
+            //her episode'da rastgele bir state üzerinden başlanır.
+            //set_inital_state fonksiyonu playerPosition koordinatını rastgele bir state üzerine getirir.
+            if(set_initial_state()){
                 continue;
             }
-            changePlayerPosition(new Koordinat(randomPosition%column_row_number,randomPosition/column_row_number));
-            
-            /*
-            if((isTarget == false) && (episode_length>99990)){
-                episode_length +=50000;
-            }
-            */
-            while(true){
-                
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                
-                //playerin geçebileceği stateleri bulunur.
-                int[] playerR = R_matrisi[playerPosition.getState()];
-                ArrayList<Integer> statesFromPlayer = new ArrayList<>();
-                for(int i = 0; i<playerR.length;i++){
-                    if(playerR[i] != -1){
-                        statesFromPlayer.add(i);
-                    }
-                }
-                
-                int nextState = QmaksState(playerPosition.getState(),statesFromPlayer);
-                
-               /*
-                //currentState üzerinden random geçilecek state seçilir.
-                int randomStateNumber = randomGenerator.nextInt(statesFromPlayer.size());
-                int nextState = statesFromPlayer.get(randomStateNumber);
-                
-                ArrayList<Integer> statesFromRandom = new ArrayList<>();
-                int[] randomR = R_matrisi[nextState];
-                for(int i = 0; i<randomR.length;i++){
-                    if(randomR[i] != -1){
-                        statesFromRandom.add(i);
-                    }
-                }
-                
-                
-                //statesFromRandom arraylisti içerisindeki statelerden en yüksek Q matrisi değerine sahip olan geçiş seçilir.
-                double Q_maks = Q_matrisi[nextState][statesFromRandom.get(0)];
-                for(int state: statesFromRandom){
-                    if(Q_maks<Q_matrisi[nextState][state]){
-                        Q_maks = Q_matrisi[nextState][state]; 
-                    }
-                }
-               */
-                
-                
-                Q_matrisi[playerPosition.getState()][nextState] =  R_matrisi[playerPosition.getState()][nextState] + y*findMaksQ(nextState);
-                changePlayerPosition(new Koordinat(nextState%column_row_number,nextState/column_row_number));
-
-                //eğer target'a vardıysak
-                if(playerPosition.isEqual(target)){
-                    break;
-                }
-
-                //eğer bir obstacle'a çarparsa başa döner gidilen stateler listesi temizlenir.
-                boolean isObstacle = false;
-                for(int obstacle:obstacleStates){
-                    if(obstacle == nextState){
-                        isObstacle = true;
-                    }
-                }
-
-                if(isObstacle){
-                    break;
-                }
-
-
+            //episode başlatlılır
+            //bir obstacle'a çarpana veya hedefe ulaşana kadar episode devam eder.
+            if(initialize_episode()){
+                System.out.println(episode);
+                episode++;
             }
         }
         System.out.println("iterasyon bitti.");
         
         //Daha sonra başlangıç noktasından başlanarak. maks maliyetli yol çizdirilir.
+        leaveTrace = true;
         drawPath();
         
         
     }
     
+    
     private void changePlayerPosition(Koordinat targetPosition){
         if(playerPosition.isEqual(targetPosition)){
            return; 
         }
-        
-        graphics.clearRect((playerPosition.getX()*cornerLengthX)+cornerLengthX/3,(playerPosition.getY()*cornerLengthY)+cornerLengthY/3,cornerLengthX/3,cornerLengthY/2);
-        boolean isFilled = false;
-        for(int obstacle: obstacleStates){
-            if(playerPosition.getState() == obstacle){
-                graphics.setColor(obstacleColor);
-                graphics.fillRect((playerPosition.getX()*cornerLengthX)+cornerLengthX/3,(playerPosition.getY()*cornerLengthY)+cornerLengthY/3,cornerLengthX/3,cornerLengthY/2);
-                isFilled = true;
-                break;
-                     
+        if(!leaveTrace){
+            graphics.clearRect((playerPosition.getX()*cornerLengthX)+cornerLengthX/3,(playerPosition.getY()*cornerLengthY)+cornerLengthY/3,cornerLengthX/3,cornerLengthY/2);
+            boolean isFilled = false;
+            for(int obstacle: obstacleStates){
+                if(playerPosition.getState() == obstacle){
+                    graphics.setColor(obstacleColor);
+                    graphics.fillRect((playerPosition.getX()*cornerLengthX)+cornerLengthX/3,(playerPosition.getY()*cornerLengthY)+cornerLengthY/3,cornerLengthX/3,cornerLengthY/2);
+                    isFilled = true;
+                    break;
+
+                }
+            }
+            if(isFilled == false){
+                if(playerPosition.getState() == start.getState()){
+                    graphics.setColor(startColor);
+                    graphics.fillRect((playerPosition.getX()*cornerLengthX)+cornerLengthX/3,(playerPosition.getY()*cornerLengthY)+cornerLengthY/3,cornerLengthX/3,cornerLengthY/2);
+                }
+                else if(playerPosition.getState() == target.getState()){
+                    graphics.setColor(targetColor);
+                    graphics.fillRect((playerPosition.getX()*cornerLengthX)+cornerLengthX/3,(playerPosition.getY()*cornerLengthY)+cornerLengthY/3,cornerLengthX/3,cornerLengthY/2);
+                }
             }
         }
-        if(isFilled == false){
-            if(playerPosition.getState() == start.getState()){
-                graphics.setColor(startColor);
-                graphics.fillRect((playerPosition.getX()*cornerLengthX)+cornerLengthX/3,(playerPosition.getY()*cornerLengthY)+cornerLengthY/3,cornerLengthX/3,cornerLengthY/2);
-            }
-            else if(playerPosition.getState() == target.getState()){
-                graphics.setColor(targetColor);
-                graphics.fillRect((playerPosition.getX()*cornerLengthX)+cornerLengthX/3,(playerPosition.getY()*cornerLengthY)+cornerLengthY/3,cornerLengthX/3,cornerLengthY/2);
-            }
-        }
-        
         graphics.setColor(playerColor);
         graphics.fillRect((targetPosition.getX()*cornerLengthX)+cornerLengthX/3,(targetPosition.getY()*cornerLengthY)+cornerLengthY/3,cornerLengthX/3,cornerLengthY/2);
         
@@ -366,7 +292,7 @@ public class Board {
     private int QmaksState(int playerState,ArrayList<Integer> statesFromPlayer){
         double[] q_values = new double[statesFromPlayer.size()];
         for(int i = 0; i<statesFromPlayer.size();i++){
-            q_values[i] = R_matrisi[playerState][statesFromPlayer.get(i)] + y*findMaksQ(statesFromPlayer.get(i));
+            q_values[i] = R_matrisi[playerState][statesFromPlayer.get(i)] + y*maksQ(statesFromPlayer.get(i));
         }
         
         ArrayList<Integer> maksStates = new ArrayList<>();
@@ -399,7 +325,7 @@ public class Board {
         }
     }
     
-    private double findMaksQ(int state){
+    private double maksQ(int state){
         //state üzerinden geçilebilecek state'ler bulunur.
         int[] playerR = R_matrisi[state];
         ArrayList<Integer> statesFromState = new ArrayList<>();
@@ -409,24 +335,77 @@ public class Board {
             }
         }
         
-        ArrayList<Double> qMaks = new ArrayList<>();
-        qMaks.add(Q_matrisi[state][statesFromState.get(0)]);
-        for(Integer state0: statesFromState){
-            if(qMaks.get(0)<Q_matrisi[state][state0]){
-                qMaks.clear();
-                qMaks.add(Q_matrisi[state][state0]); 
-            }
-            else if(qMaks.get(0) == Q_matrisi[state][state0]){
-                qMaks.add(Q_matrisi[state][state0]);
+        double q_maks = Q_matrisi[state][statesFromState.get(0)];
+        for(int i = 0;i<statesFromState.size();i++){
+            if(q_maks < Q_matrisi[state][statesFromState.get(i)]){
+                q_maks = Q_matrisi[state][statesFromState.get(i)];
             }
         }
-        if(qMaks.size() > 1){
-            int randomNumber = randomGenerator.nextInt(qMaks.size());
-            return qMaks.get(randomNumber);
-        }else{
-            return qMaks.get(0);
+        return q_maks;
+    }
+    
+    private boolean set_initial_state(){
+        int randomPosition = randomGenerator.nextInt(state_number);
+        boolean isObstacle0 = false;
+        for(int obstacle: obstacleStates){
+            if(obstacle == randomPosition){
+                isObstacle0 = true;
+            }
         }
-        
+        if(isObstacle0 ||(randomPosition == target.getState())){
+            return true;
+        }
+        changePlayerPosition(new Koordinat(randomPosition%column_row_number,randomPosition/column_row_number));
+        return false;
+    }
+    
+    private boolean initialize_episode(){
+        while(true){
+            /* //GECİKME
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            */
+            
+            //playerin geçebileceği state'ler bulunur bu stateler içerisinden rastgele bir tanesi seçilir.
+            int[] playerR = R_matrisi[playerPosition.getState()];
+            ArrayList<Integer> statesFromPlayer = new ArrayList<>();
+            for(int i = 0; i<playerR.length;i++){
+                if(playerR[i] != -1){
+                    statesFromPlayer.add(i);
+                }
+            }
+            int nextState = statesFromPlayer.get(randomGenerator.nextInt(statesFromPlayer.size()));
+            
+            int current_reward = R_matrisi[playerPosition.getState()][nextState];
+            double next_reward = maksQ(nextState);
+            double q_value = current_reward + (y * next_reward);
+            Q_matrisi[playerPosition.getState()][nextState] = q_value;
+            
+            changePlayerPosition(new Koordinat(nextState%column_row_number,nextState/column_row_number));
+
+            //eğer target'a vardıysak
+            if(playerPosition.isEqual(target)){
+                
+                return true;
+            }
+
+            //eğer bir obstacle'a çarparsa başa döner gidilen stateler listesi temizlenir.
+            boolean isObstacle = false;
+            for(int obstacle:obstacleStates){
+                if(obstacle == nextState){
+                    isObstacle = true;
+                }
+            }
+
+            if(isObstacle){
+                return false;
+            }
+
+
+        }
     }
     
     private void drawPath(){
@@ -435,7 +414,7 @@ public class Board {
         boolean isTarget = false;
         while(!isTarget){
             try {
-                    Thread.sleep(50);
+                    Thread.sleep(1000);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -462,7 +441,7 @@ public class Board {
 
             changePlayerPosition(new Koordinat(nextState%column_row_number,nextState/column_row_number));
 
-            if(playerPosition == target){
+            if(playerPosition.getState() == target.getState()){
                 isTarget = true;
                 System.out.println("hedefe varıldı.");
             }
