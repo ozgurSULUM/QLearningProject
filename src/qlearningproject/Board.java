@@ -2,7 +2,6 @@
 package qlearningproject;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.io.File;
 import java.io.FileWriter;
@@ -13,7 +12,6 @@ import javax.swing.JPanel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Arrays;
-
 public class Board {
     private JPanel panel;
     private int column_row_number;
@@ -46,10 +44,12 @@ public class Board {
     private Random randomGenerator;
     private Graphics graphics;
     
+    private ArrayList<Integer> steps_per_episode;
+    private ArrayList<Integer> costs_per_episode;
     public Board(JPanel panel, int column_row_number, int obstacle_rate,Koordinat start,Koordinat target) {
        
-        this.normal_reward = 2;
-        this.hole_reward = -25;
+        this.normal_reward = 3;
+        this.hole_reward = -5;
         this.target_reward = 100;
         this.y =  0.9;
         this.startColor = new Color(0,0,255,50);
@@ -76,6 +76,7 @@ public class Board {
         createR();
         createObstacles();
         startQLearning(500);
+        createGraphs();
         //print2D(R_matrisi);
     }
     
@@ -228,7 +229,8 @@ public class Board {
                 Q_matrisi[i][j] = 0;
             }
         }
-        
+        this.steps_per_episode = new ArrayList<>();
+        this.costs_per_episode = new ArrayList<>();
         
         leaveTrace = false;
         for(int episode = 0;episode <episode_length;){
@@ -247,19 +249,28 @@ public class Board {
             }
         }
         System.out.println("iterasyon bitti.");
-        
+        /*
+        System.out.println("step array size:"+steps_per_episode.size());
+        for(int i = 0;i<costs_per_episode.size();i++){
+            System.out.print(costs_per_episode.get(i)+" ");
+        }
+        System.out.println("cost array size:"+costs_per_episode.size());
+        */
         //Daha sonra başlangıç noktasından başlanarak. maks maliyetli yol çizdirilir.
         leaveTrace = true;
+        System.out.println("yol çizdiriliyor...");
         drawPath();
-        
+        System.out.println("yol çizdirilmesi tamamlandı.");
         
     }
     
     
     private void changePlayerPosition(Koordinat targetPosition){
+        /*
         if(playerPosition.isEqual(targetPosition)){
            return; 
         }
+        */
         if(!leaveTrace){
             graphics.clearRect((playerPosition.getX()*cornerLengthX)+cornerLengthX/3,(playerPosition.getY()*cornerLengthY)+cornerLengthY/3,cornerLengthX/3,cornerLengthY/2);
             boolean isFilled = false;
@@ -287,42 +298,6 @@ public class Board {
         graphics.fillRect((targetPosition.getX()*cornerLengthX)+cornerLengthX/3,(targetPosition.getY()*cornerLengthY)+cornerLengthY/3,cornerLengthX/3,cornerLengthY/2);
         
         playerPosition = targetPosition;
-    }
-    
-    private int QmaksState(int playerState,ArrayList<Integer> statesFromPlayer){
-        double[] q_values = new double[statesFromPlayer.size()];
-        for(int i = 0; i<statesFromPlayer.size();i++){
-            q_values[i] = R_matrisi[playerState][statesFromPlayer.get(i)] + y*maksQ(statesFromPlayer.get(i));
-        }
-        
-        ArrayList<Integer> maksStates = new ArrayList<>();
-        maksStates.add(0);
-        double maksQ = q_values[maksStates.get(0)];
-        for(int i = 0;i<q_values.length;i++){
-            if(maksQ < q_values[i]){
-                maksStates.clear();
-                maksStates.add(i);
-                maksQ = q_values[i];
-            }
-            else if( maksQ == q_values[i]){
-                maksStates.add(i);
-            }
-        }
-        int k = 0;
-        for(Integer s1:statesFromPlayer){
-            for(int obstacle: obstacleStates){
-                if(obstacle == s1){
-                    maksStates.add(k);
-                }
-            }
-            k++;
-        }
-        if(maksStates.size() > 1){
-            int randomNumber = randomGenerator.nextInt(maksStates.size());
-            return statesFromPlayer.get(maksStates.get(randomNumber));
-        }else{
-            return statesFromPlayer.get(maksStates.get(0));
-        }
     }
     
     private double maksQ(int state){
@@ -360,6 +335,8 @@ public class Board {
     }
     
     private boolean initialize_episode(){
+        int cost = 0;
+        int step = 0;
         while(true){
             /* //GECİKME
             try {
@@ -385,10 +362,12 @@ public class Board {
             Q_matrisi[playerPosition.getState()][nextState] = q_value;
             
             changePlayerPosition(new Koordinat(nextState%column_row_number,nextState/column_row_number));
-
+            step++;
             //eğer target'a vardıysak
             if(playerPosition.isEqual(target)){
-                
+                cost += target_reward;
+                costs_per_episode.add(cost);
+                steps_per_episode.add(step);
                 return true;
             }
 
@@ -401,9 +380,12 @@ public class Board {
             }
 
             if(isObstacle){
+                cost += hole_reward;
+                costs_per_episode.add(cost);
+                steps_per_episode.add(step);
                 return false;
             }
-
+            cost += normal_reward;
 
         }
     }
@@ -418,7 +400,6 @@ public class Board {
                 } catch (InterruptedException ex) {
                     Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            System.out.println("içinde");
             //oyuncunun gidebileceği stateler bulunur.
             int[] playerR = R_matrisi[playerPosition.getState()];
             ArrayList<Integer> statesFromPlayer = new ArrayList<>();
@@ -448,7 +429,14 @@ public class Board {
         }
     }
     
+    private void createGraphs(){
+        Graphs graphs = new Graphs(costs_per_episode, steps_per_episode);
+        graphs.setVisible(true);
+        graphs.pack();
+        graphs.setLocationRelativeTo(null);
+    }
     public static void print2D(int mat[][])
+            
     {
         // Loop through all rows
         int kontrol = 0;

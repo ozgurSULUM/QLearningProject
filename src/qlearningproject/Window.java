@@ -22,6 +22,7 @@ public class Window extends javax.swing.JFrame {
      */
     public Window() {
         initComponents();
+        
     }
 
     /**
@@ -51,7 +52,7 @@ public class Window extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setPreferredSize(new java.awt.Dimension(1400, 710));
-        setSize(new java.awt.Dimension(1000, 600));
+        setSize(new java.awt.Dimension(1400, 710));
 
         jButton1.setText("Başla");
         jButton1.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -170,7 +171,7 @@ public class Window extends javax.swing.JFrame {
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(79, Short.MAX_VALUE))
+                .addContainerGap(127, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -204,6 +205,7 @@ public class Window extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButton1MouseClicked
+        jPanel1.getGraphics().clearRect(0, 0, jPanel1.getWidth(), jPanel1.getHeight());
         int rectangle_matrix_dim = 25;
         int obstacle_rate = 30;
         Koordinat.MATRIX_LENGTH = rectangle_matrix_dim;
