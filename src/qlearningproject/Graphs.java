@@ -6,6 +6,7 @@
 package qlearningproject;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -62,12 +63,12 @@ public class Graphs extends javax.swing.JFrame {
             graphPoints.add(new Point(x1, y1));
         }
 
-        // draw white background
+        // arka plan oluşturulur.
         g2.setColor(Color.WHITE);
         g2.fillRect(padding + labelPadding, padding, panel.getWidth() - (2 * padding) - labelPadding, panel.getHeight() - 2 * padding - labelPadding);
         g2.setColor(Color.BLACK);
 
-        // create hatch marks and grid lines for y axis.
+        // y ekseni üzerinde çizgiler oluşturulur.
         for (int i = 0; i < numberYDivisions + 1; i++) {
             int x0 = padding + labelPadding;
             int x1 = pointWidth + padding + labelPadding;
@@ -85,10 +86,9 @@ public class Graphs extends javax.swing.JFrame {
             g2.drawLine(x0, y0, x1, y1);
         }
 
-        // and for x axis
+        // aynı şekilde x ekseni üzerinde çizgiler oluşturulur.
         AffineTransform default_at = g2.getTransform();
-       
-        
+        g2.setFont(new Font("TimesRoman",Font.PLAIN,9));
         for (int i = 0; i < scores.size(); i++) {
             if (scores.size() > 1) {
                 int x0 = i * (panel.getWidth() - padding * 2 - labelPadding) / (scores.size() - 1) + padding + labelPadding;
@@ -99,6 +99,7 @@ public class Graphs extends javax.swing.JFrame {
                     g2.setColor(gridColor);
                     g2.drawLine(x0, panel.getHeight() - padding - labelPadding - 1 - pointWidth, x1, padding);
                     g2.setColor(Color.BLACK);
+                    
                     String xLabel = i + "";
                     FontMetrics metrics = g2.getFontMetrics();
                     int labelWidth = metrics.stringWidth(xLabel);
@@ -110,11 +111,11 @@ public class Graphs extends javax.swing.JFrame {
             }
         }
         
-        // create x and y axes 
+        // x ve y koordinat düzlemi oluşturulur.
         g2.drawLine(padding + labelPadding, panel.getHeight() - padding - labelPadding, padding + labelPadding, padding);
         g2.drawLine(padding + labelPadding, panel.getHeight() - padding - labelPadding, panel.getWidth() - padding, panel.getHeight() - padding - labelPadding);
 
-        
+        //grafik çizdirilir.
         g2.setColor(lineColor);
         for (int i = 0; i < graphPoints.size() - 1; i++) {
             int x1 = graphPoints.get(i).x;
