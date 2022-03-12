@@ -1,5 +1,5 @@
 ## Enter start and Target Points
-Firstly enter starting and target points and start learning algorithm.
+Firstly enter start and target points and start learning algorithm.
 
 <br/>
 
