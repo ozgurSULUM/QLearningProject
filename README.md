@@ -1,4 +1,4 @@
-## Alt-Enter Start and Target Points
+## Enter start and Target Points
 Firstly enter starting and target points and start learning algorithm.
 
 <br/>
@@ -8,6 +8,7 @@ After learning environment with Q-learning algorithm it shows the most beneficia
 
 ![FirstImage](https://user-images.githubusercontent.com/41192900/157554072-8f21db8e-753d-40f3-a55e-90d5b9f84289.PNG)
 
+<br/>
 
 ## Draw Cost and Step Graphs
 After showing the most beneficial route to target based on Q matrice, it will draw episode via cost and episode via step graphs.
